@@ -1,0 +1,4 @@
+ALTER TABLE todos
+  MODIFY COLUMN description TINYTEXT NULL;
+
+

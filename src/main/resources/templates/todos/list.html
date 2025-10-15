@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Todos</title>
+    <link rel="stylesheet" th:href="@{/css/app.css}" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet" />
+    <style> body { font-family: 'Inter', system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial; } </style>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='0.9em' font-size='90'>✅</text></svg>">
+    <meta name="color-scheme" content="dark light">
+    <meta name="theme-color" content="#111827">
+    <meta name="description" content="Simple Todo App">
+</head>
+<body>
+<div class="container">
+    <div class="nav">
+        <div class="brand">Todo App</div>
+        <button class="btn btn-primary" type="button" onclick="openModal()">＋ New Todo</button>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h2 class="card-title">Your todos</h2>
+        </div>
+        <div class="card-body">
+            <table>
+                <thead>
+                <tr>
+                    <th>Title</th>
+                    <th>Status</th>
+                    <th style="width:180px">Actions</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="t : ${todos}">
+                    <td th:text="${t.title}"></td>
+                    <td>
+                        <span class="badge" th:classappend="${t.completed} ? ' badge-success' : ' badge-warning'" th:text="${t.completed} ? 'Done' : 'Open'"></span>
+                    </td>
+                    <td>
+                        <button type="button" class="btn btn-secondary btn-edit"
+                                th:attr="data-id=${t.id},data-title=${t.title},data-description=${t.description},data-completed=${t.completed}">Edit</button>
+                        <form th:action="@{'/todos/' + ${t.id} + '/delete'}" method="post" style="display:inline">
+                            <button class="btn btn-danger" type="submit">Delete</button>
+                        </form>
+                    </td>
+                </tr>
+                <tr th:if="${#lists.isEmpty(todos)}">
+                    <td class="empty" colspan="3">No items yet. Create your first todo!</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div id="backdrop" class="modal-backdrop"></div>
+    <div id="createModal" class="modal" aria-hidden="true" role="dialog" aria-modal="true">
+        <div class="modal-dialog">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Create Todo</h3>
+                    <button class="btn btn-secondary" type="button" onclick="closeModal()">✕</button>
+                </div>
+                <div class="card-body">
+                    <form th:action="@{/todos}" method="post" th:object="${todo}">
+                        <div class="field">
+                            <label for="m_title">Title</label>
+                            <input id="m_title" type="text" th:field="*{title}" required maxlength="255" />
+                            <div class="error" th:if="${#fields.hasErrors('title')}" th:errors="*{title}"></div>
+                        </div>
+
+                        <div class="field">
+                            <label for="m_description">Description</label>
+                            <textarea id="m_description" rows="4" th:field="*{description}"></textarea>
+                        </div>
+
+                        
+
+                        <div class="field">
+                            <label for="m_completed">Completed</label>
+                            <input id="m_completed" type="checkbox" th:field="*{completed}" />
+                        </div>
+
+                        <div class="form-actions">
+                            <button class="btn btn-primary" type="submit">Create</button>
+                            <button class="btn btn-secondary" type="button" onclick="closeModal()">Cancel</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="editModal" class="modal" aria-hidden="true" role="dialog" aria-modal="true">
+        <div class="modal-dialog">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Edit Todo</h3>
+                    <button class="btn btn-secondary" type="button" onclick="closeEditModal()">✕</button>
+                </div>
+                <div class="card-body">
+                    <form id="editForm" method="post">
+                        <div class="field">
+                            <label for="e_title">Title</label>
+                            <input id="e_title" name="title" type="text" required maxlength="255" />
+                        </div>
+
+                        <div class="field">
+                            <label for="e_description">Description</label>
+                            <textarea id="e_description" name="description" rows="4"></textarea>
+                        </div>
+
+                        <div class="field">
+                            <label for="e_completed">Completed</label>
+                            <input id="e_completed" name="completed" type="checkbox" />
+                        </div>
+
+                        <div class="form-actions">
+                            <button class="btn btn-primary" type="submit">Save</button>
+                            <button class="btn btn-secondary" type="button" onclick="closeEditModal()">Cancel</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function openModal(){
+            document.getElementById('createModal').classList.add('show');
+            document.getElementById('backdrop').classList.add('show-backdrop');
+            const t = document.getElementById('m_title'); if (t) t.focus();
+        }
+        function closeModal(){
+            document.getElementById('createModal').classList.remove('show');
+            document.getElementById('backdrop').classList.remove('show-backdrop');
+        }
+        document.addEventListener('keydown', function(e){ if(e.key === 'Escape'){ closeModal(); }});
+        document.getElementById('backdrop').addEventListener('click', closeModal);
+
+        function openEditModalFromButton(btn){
+            var id = btn.getAttribute('data-id');
+            var title = btn.getAttribute('data-title') || '';
+            var description = btn.getAttribute('data-description');
+            if(description === null || description === 'null') description = '';
+            var completed = (btn.getAttribute('data-completed') === 'true');
+
+            var form = document.getElementById('editForm');
+            form.setAttribute('action', '/todos/' + id);
+            document.getElementById('e_title').value = title;
+            document.getElementById('e_description').value = description;
+            document.getElementById('e_completed').checked = completed;
+
+            document.getElementById('editModal').classList.add('show');
+            document.getElementById('backdrop').classList.add('show-backdrop');
+        }
+        function closeEditModal(){
+            document.getElementById('editModal').classList.remove('show');
+            document.getElementById('backdrop').classList.remove('show-backdrop');
+        }
+        document.addEventListener('click', function(e){
+            if(e.target && e.target.classList.contains('btn-edit')){
+                openEditModalFromButton(e.target);
+            }
+        });
+    </script>
+</div>
+</body>
+</html>
+
+

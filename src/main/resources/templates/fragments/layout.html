@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <title th:replace="~{::title}">Todo App</title>
+    <link rel="stylesheet" th:href="@{/css/app.css}" />
+    <style>
+        body { font-family: Arial, sans-serif; margin: 24px; }
+        table { border-collapse: collapse; width: 100%; margin-top: 12px; }
+        th, td { border: 1px solid #ddd; padding: 8px; }
+        th { background: #f6f6f6; text-align: left; }
+        a.button, button { padding: 6px 10px; }
+        .error { color: #b00020; margin-top: 4px; }
+    </style>
+    <th:block th:replace="~{::head}"></th:block>
+    <th:block th:replace="~{::script}"></th:block>
+    <th:block th:replace="~{::style}"></th:block>
+</head>
+<body>
+<header>
+    <a th:href="@{/todos}"><strong>Todo App</strong></a>
+</header>
+<main>
+    <th:block th:replace="~{::section}"></th:block>
+    <th:block th:replace="~{::content}"></th:block>
+</main>
+</body>
+</html>
+
+

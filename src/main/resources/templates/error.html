@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <title>Error</title>
+    <link rel="stylesheet" th:href="@{/css/app.css}" />
+    <style>
+        .box { border: 1px solid #ddd; padding: 12px; background: #fff5f5; }
+    </style>
+</head>
+<body>
+<h1>Something went wrong</h1>
+<div class="box" th:text="${error}">Unknown error</div>
+<p><a th:href="@{/todos}">Back to list</a></p>
+</body>
+</html>
+
+
